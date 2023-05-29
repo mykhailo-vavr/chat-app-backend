@@ -1,13 +1,16 @@
 import { Router } from 'express';
-import authorization from '@/middleware/authorization';
-import { signUpController, signInController, verifyController } from '@/controllers/auth';
+import { authorization } from '@/middlewares';
+import { signUpController, signInController, verifyController, verifyTFA } from '@/controllers';
+import { asyncControllerWrapper } from '@/utils';
 
 const router = Router();
 
-router.post('/sign-up', signUpController);
+router.post('/sign-up', asyncControllerWrapper(signUpController));
 
-router.post('sign-in', signInController);
+router.post('/sign-in', asyncControllerWrapper(signInController));
 
-router.get('/verify', authorization, verifyController);
+router.post('/verify-tfa', authorization, asyncControllerWrapper(verifyTFA));
+
+router.get('/verify-token', authorization, asyncControllerWrapper(verifyController));
 
 export default router;

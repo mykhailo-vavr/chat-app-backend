@@ -1,10 +1,9 @@
-import { statusCodes } from '@/utils/api';
-import { verify } from '@/utils/jwt';
+import { statusCodes, verify } from '@/utils';
 import { NextFunction, Request, Response } from 'express';
 
 export default (req: Request, res: Response, next: NextFunction) => {
   try {
-    const token = req.header('token');
+    const token = req.headers.authorization;
 
     if (!token) {
       throw new Error('Access denied');

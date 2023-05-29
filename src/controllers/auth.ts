@@ -1,54 +1,109 @@
-import pool from '@/db/pool';
-import { controllerWrapper, statusCodes } from '@/utils/api';
-import { hashPassword, validatePassword } from '@/utils/auth';
-import { sign } from '@/utils/jwt';
-import { Request, Response } from 'express';
+import { User, VerifyTFA } from '@/models';
+import { TypedReqBody, Response, CreationAttributes, Request } from '@/types';
+import { statusCodes } from '@/utils/api';
+import { generateCode, hash, sendEmail, validateHash } from '@/utils';
+import { sign, verify } from '@/utils/jwt';
+import { Op } from 'sequelize';
 
-export const signUpController = controllerWrapper(async (req: Request, res: Response) => {
-  const { username, email, password } = req.body as Record<string, string>;
+export const signUpController = async (req: TypedReqBody<CreationAttributes<User>>, res: Response) => {
+  const { firstName, lastName, password, email, phone } = req.body;
 
-  const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+  try {
+    const user = await User.findOne({ where: { [Op.or]: [{ email }, { phone }] } });
 
-  if (user.rowCount !== 0) {
-    res.status(statusCodes.unauthorized).send(`User with email ${email} is already exists`);
-    return;
+    if (user) {
+      res.status(statusCodes.conflict).json('User with such email or phone is already exists');
+      return;
+    }
+
+    const hashedPassword = await hash(password);
+
+    await User.create({
+      firstName,
+      lastName,
+      email,
+      phone,
+      password: hashedPassword,
+    });
+
+    console.info('User was created successfully');
+    res.status(statusCodes.created).json('User was created successfully');
+  } catch (e) {
+    console.error(e);
+    res.status(statusCodes.internalServerError).json('Error while signing up user');
   }
+};
 
-  const hashedPassword = await hashPassword(password);
+export const signInController = async (req: TypedReqBody<CreationAttributes<User>>, res: Response) => {
+  const { email, password } = req.body;
 
-  await pool.query('INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *', [
-    username,
-    email,
-    hashedPassword,
-  ]);
+  try {
+    const user = await User.findOne({ where: { email } });
 
-  console.info('User was created successfully');
+    if (!user) {
+      res.status(statusCodes.conflict).json('Password or email are incorrect');
+      return;
+    }
 
-  res.status(statusCodes.ok).json('User was created successfully');
-});
+    const validPassword = await validateHash(password, user.password);
 
-export const signInController = controllerWrapper(async (req, res) => {
-  const { email, password } = req.body as Record<string, string>;
+    if (!validPassword) {
+      res.status(statusCodes.unauthorized).send('Password or email are incorrect');
+      return;
+    }
 
-  const user = await pool.query<{ password: string }>('SELECT password FROM users WHERE email = $1', [email]);
+    const code = generateCode();
+    const hashedCode = await hash(code);
 
-  if (user.rowCount !== 0) {
-    res.status(statusCodes.unauthorized).send('Password or email are incorrect');
-    return;
+    await VerifyTFA.destroy({
+      where: { email },
+    });
+
+    await VerifyTFA.create({
+      email,
+      code: hashedCode,
+    });
+
+    await sendEmail({ to: email, html: `<h1>${code}</h1>`, subject: 'Verification code' });
+
+    const token = sign({ user: { email, id: user.id } });
+
+    res.status(statusCodes.ok).json({ token });
+  } catch (e) {
+    console.error(e);
+    res.status(statusCodes.internalServerError).json('Error while sign in user');
   }
+};
 
-  const validPassword = await validatePassword(password, user.rows[0].password);
+export const verifyTFA = async (req: TypedReqBody<CreationAttributes<VerifyTFA>>, res: Response) => {
+  const { email, code } = req.body;
 
-  if (!validPassword) {
-    res.status(statusCodes.unauthorized).send('Password or email are incorrect');
-    return;
+  try {
+    const verifyTFAInfo = await VerifyTFA.findOne({ where: { email } });
+    const authToken = verify(req.headers.authorization || '');
+
+    if (!verifyTFAInfo) {
+      res.status(statusCodes.unauthorized).send('Code or email are incorrect');
+      return;
+    }
+    console.info(code, verifyTFAInfo.code);
+
+    const validCode = await validateHash(String(code), verifyTFAInfo.code);
+
+    if (!validCode) {
+      res.status(statusCodes.unauthorized).send('Code or email are incorrect');
+      return;
+    }
+
+    const token = sign(authToken as Record<string, any>);
+
+    res.status(statusCodes.ok).json({ token });
+  } catch (e) {
+    console.error(e);
+    res.status(statusCodes.internalServerError).json('Error while sign in user');
   }
+};
 
-  const token = sign({ user: { email } });
-
-  res.status(statusCodes.ok).json({ token });
-});
-
-export const verifyController = controllerWrapper(async (req, res) => {
+export const verifyController = async (req: Request, res: Response) => {
   res.json(true);
-});
+};
