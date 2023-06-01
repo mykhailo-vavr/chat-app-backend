@@ -1,8 +1,8 @@
 import sequelize from '@/sequelize';
 import { Model, Table, PrimaryKey, Column, DataType, AllowNull, CreatedAt, CreationOptional } from '@/types';
 
-@Table({ modelName: 'VerifyTFA', tableName: 'verify_tfa' })
-class VerifyTFA extends Model<VerifyTFA> {
+@Table({ modelName: 'VerifyCode', tableName: 'verify_code' })
+class VerifyCode extends Model<VerifyCode> {
   @PrimaryKey
   @Column({ type: DataType.INTEGER, autoIncrement: true })
   id!: CreationOptional<number>;
@@ -19,6 +19,6 @@ class VerifyTFA extends Model<VerifyTFA> {
   createdAt!: CreationOptional<Date>;
 }
 
-sequelize.addModels([VerifyTFA]);
+sequelize.addModels([VerifyCode]);
 
-export default VerifyTFA;
+export { VerifyCode };

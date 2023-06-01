@@ -1,12 +1,12 @@
 import { Router } from 'express';
 import { authorization } from '@/middlewares';
 import { asyncControllerWrapper } from '@/utils';
-import { getMessages, sendMessage } from '@/controllers';
+import { MessageController } from '@/controllers';
 
 const router = Router();
 
-router.post('/send', authorization, asyncControllerWrapper(sendMessage));
+router.post('/', authorization, asyncControllerWrapper(MessageController.sendMessage));
 
-router.get('/', authorization, asyncControllerWrapper(getMessages));
+router.get('/', authorization, asyncControllerWrapper(MessageController.getMessages));
 
 export default router;

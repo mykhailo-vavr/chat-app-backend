@@ -9,7 +9,7 @@ class Message extends Model<Message> {
 
   @AllowNull(false)
   @Column(DataType.INTEGER)
-  senderId!: string;
+  senderId!: number;
 
   @AllowNull(false)
   @Column(DataType.INTEGER)
@@ -17,7 +17,7 @@ class Message extends Model<Message> {
 
   @AllowNull(false)
   @Column(DataType.TEXT)
-  message!: number;
+  message!: string;
 
   @CreatedAt
   createdAt!: CreationOptional<Date>;
@@ -28,4 +28,4 @@ class Message extends Model<Message> {
 
 sequelize.addModels([Message]);
 
-export default Message;
+export { Message };

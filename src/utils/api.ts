@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from '@/types';
+import { NextFunction, Request, Response, TypedReqQuery } from '@/types';
 
 export const statusCodes = {
   ok: 200,
@@ -11,7 +11,7 @@ export const statusCodes = {
 };
 
 export const asyncControllerWrapper =
-  (callback: (req: Request, res: Response, next: NextFunction) => Promise<void>) =>
+  (callback: (req: TypedReqQuery, res: Response, next: NextFunction) => Promise<void>) =>
   (req: Request, res: Response, next: NextFunction) => {
     callback(req, res, next).catch(next);
   };

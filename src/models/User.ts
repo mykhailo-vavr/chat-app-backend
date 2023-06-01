@@ -49,4 +49,4 @@ class User extends Model<User> {
 
 sequelize.addModels([User]);
 
-export default User;
+export { User };

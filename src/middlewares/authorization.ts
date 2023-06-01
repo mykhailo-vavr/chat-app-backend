@@ -1,7 +1,8 @@
-import { statusCodes, verify } from '@/utils';
-import { NextFunction, Request, Response } from 'express';
+import { TokenService } from '@/services';
+import { NextFunction, Request, Response } from '@/types';
+import { statusCodes } from '@/utils';
 
-export default (req: Request, res: Response, next: NextFunction) => {
+export const authorization = (req: Request, res: Response, next: NextFunction) => {
   try {
     const token = req.headers.authorization;
 
@@ -9,7 +10,7 @@ export default (req: Request, res: Response, next: NextFunction) => {
       throw new Error('Access denied');
     }
 
-    verify(token);
+    TokenService.verify.access(token);
 
     next();
   } catch (error) {
