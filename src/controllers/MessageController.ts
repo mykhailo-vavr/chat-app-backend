@@ -1,10 +1,7 @@
 import { Message } from '@/models';
 import { decrypt, encrypt, statusCodes } from '@/utils';
 import { Op } from 'sequelize';
-import dotenv from 'dotenv';
 import { BaseResponse, GetMessagesRequest, SendMessageRequest } from '@/schemas';
-
-dotenv.config();
 
 export class MessageController {
   static async sendMessage(req: SendMessageRequest, res: BaseResponse) {

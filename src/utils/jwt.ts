@@ -1,7 +1,4 @@
 import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
-
-dotenv.config();
 
 export const sign = (payload: Record<string, any>, secret: string, options: jwt.SignOptions = { expiresIn: '1h' }) =>
   jwt.sign(payload, secret, options);

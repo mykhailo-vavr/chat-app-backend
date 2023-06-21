@@ -1,9 +1,7 @@
 import { Sequelize } from 'sequelize-typescript';
-import dotenv from 'dotenv';
+import { ConfigService } from '@/services';
 
-dotenv.config();
-
-const sequelize = new Sequelize(process.env.DB_CONNECTION_URI || '');
+const sequelize = new Sequelize(ConfigService.get('DB_CONNECTION_URI'));
 
 (async () => {
   await sequelize.authenticate();
