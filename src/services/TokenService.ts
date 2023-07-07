@@ -5,7 +5,7 @@ export class TokenService {
   static get generate() {
     return {
       access: (payload: Record<string, any>) =>
-        sign(payload, ConfigService.get('ACCESS_TOKEN_SECRET'), { expiresIn: '10m' }),
+        sign(payload, ConfigService.get('ACCESS_TOKEN_SECRET'), { expiresIn: '15h' }),
       refresh: (payload: Record<string, any>) =>
         sign(payload, ConfigService.get('REFRESH_TOKEN_SECRET'), { expiresIn: '1h' }),
       verification: (payload: Record<string, any>) =>

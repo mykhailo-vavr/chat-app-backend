@@ -1,7 +1,7 @@
 import { Sequelize } from 'sequelize-typescript';
 import { ConfigService } from '@/services';
 
-const sequelize = new Sequelize(ConfigService.get('DB_CONNECTION_URI'));
+const sequelize = new Sequelize(ConfigService.get('DB_CONNECTION_URI'), { logging: false });
 
 (async () => {
   await sequelize.authenticate();
