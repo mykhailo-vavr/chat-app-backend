@@ -1,7 +1,7 @@
 {
-  "name": "chat-app-frontend",
+  "name": "chat-app-backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "chat-app-backend",
   "main": "index.ts",
   "scripts": {
     "start": "ts-node -r tsconfig-paths/register src/index.ts",
